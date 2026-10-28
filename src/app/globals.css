@@ -10,47 +10,59 @@
   --color-hairline-dark: #2A2826;
 }
 
-* {
-  border-color: #DED9D0;
-  box-sizing: border-box;
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: #DED9D0;
+  }
+
+  html {
+    background-color: #F6F4F0;
+    color: #141312;
+    font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #F6F4F0;
+    color: #141312;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    color: inherit;
+  }
 }
 
-html {
-  background-color: #F6F4F0;
-  color: #141312;
-  font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
-}
+@layer utilities {
+  .font-serif {
+    font-family: var(--font-cormorant), Georgia, serif;
+  }
 
-body {
-  background-color: #F6F4F0;
-  color: #141312;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+  .font-sans {
+    font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
 
-.font-serif {
-  font-family: var(--font-cormorant), Georgia, serif;
-}
+  .font-mono {
+    font-family: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
 
-.font-sans {
-  font-family: var(--font-plus-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-.font-mono {
-  font-family: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 ::selection {
   background-color: #8C5A3C;
   color: #F6F4F0;
-}
-
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
 }
 
 ::-webkit-scrollbar {

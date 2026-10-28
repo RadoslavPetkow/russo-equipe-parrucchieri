@@ -6,6 +6,7 @@ export interface Stylist {
   bio: string;
   experienceYears: number;
   image: string;
+  monogram?: string;
 }
 
 export type ServiceCategory = 'taglio-styling' | 'colore-balayage' | 'trattamenti' | 'spose-eventi';
@@ -118,7 +119,8 @@ export const STYLISTS: Stylist[] = [
     specialty: "Balayage sartoriale, correzione colore complessa, taglio architettonico personalizzato",
     bio: "Fondata la propria visione sull'equilibrio tra la rigida disciplina geometrica e la morbidezza delle sfumature piemontesi, Patrizia guida l'Atelier con oltre 25 anni di dedizione alla bellezza su misura.",
     experienceYears: 26,
-    image: "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?auto=format&fit=crop&w=800&q=85",
+    monogram: "PR / 01",
+    image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=800&q=85",
   },
   {
     id: "elena-v",
@@ -127,7 +129,8 @@ export const STYLISTS: Stylist[] = [
     specialty: "Taglio donna dinamico, piega editoriale, texturizzazione e styling naturale",
     bio: "Specializzata nelle forme fluide e nei volumi calibrati senza sforzo. Elena interpreta i trend contemporanei traducendoli in tagli pratici da gestire nella vita quotidiana con eleganza rilassata.",
     experienceYears: 12,
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=85",
+    monogram: "EV / 02",
+    image: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=800&q=85",
   },
   {
     id: "marco-d",
@@ -136,7 +139,8 @@ export const STYLISTS: Stylist[] = [
     specialty: "Degradé soleil, biondi nordici e caldi, trattamenti di ricostruzione della fibra capillare",
     bio: "Profondo conoscitore della chimica del capello e dei protocolli rigenerativi molecolari. Marco progetta sfumature che mantengono intatta l'integrità strutturale del fusto capillare.",
     experienceYears: 9,
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85",
+    monogram: "MD / 03",
+    image: "https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=800&q=85",
   },
 ];
 
