@@ -28,6 +28,7 @@ interface RitualContextType {
   addService: (service: Service) => void;
   removeService: (serviceId: string) => void;
   toggleService: (service: Service) => void;
+  replaceServices: (services: Service[]) => void;
   clearServices: () => void;
   addPackage: (packageId: string) => void;
   isServiceSelected: (serviceId: string) => boolean;
@@ -217,6 +218,10 @@ export function RitualProvider({ children }: { children: React.ReactNode }) {
     setSelectedServices([]);
   };
 
+  const replaceServices = (services: Service[]) => {
+    setSelectedServices(services);
+  };
+
   const addPackage = (packageId: string) => {
     const pkg = CURATED_PACKAGES.find((p) => p.id === packageId);
     if (!pkg) return;
@@ -282,6 +287,7 @@ export function RitualProvider({ children }: { children: React.ReactNode }) {
         addService,
         removeService,
         toggleService,
+        replaceServices,
         clearServices,
         addPackage,
         isServiceSelected,
