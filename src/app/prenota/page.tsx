@@ -29,6 +29,7 @@ function PrenotaContent() {
   const fromParam = searchParams.get("from");
 
   const {
+    bookings,
     selectedServices,
     addService,
     removeService,
@@ -108,6 +109,17 @@ function PrenotaContent() {
     return ["10:30", "14:00", "16:00"];
   }, [selectedDate]);
 
+  // Check if a time slot is already booked for this stylist on this date
+  const isSlotOccupied = (timeSlot: string) => {
+    return bookings.some(
+      (b) =>
+        b.status !== "annullato" &&
+        b.date === selectedDate &&
+        b.stylistId === selectedStylistId &&
+        b.time === timeSlot
+    );
+  };
+
   // Recommended quick add-on services that are not already selected
   const quickAddons: Service[] = useMemo(() => {
     const candidateIds = ["bagno-luce-gloss", "trattamento-detox-ossigenazione", "piega-editoriale-texturizzazione"];
@@ -121,6 +133,11 @@ function PrenotaContent() {
     e.preventDefault();
     if (selectedServices.length === 0) {
       alert("Seleziona almeno un servizio per procedere alla prenotazione.");
+      return;
+    }
+
+    if (isSlotOccupied(selectedTime)) {
+      alert(`La fascia oraria delle ore ${selectedTime} risulta già occupata per lo stilista selezionato. Seleziona un altro orario.`);
       return;
     }
 
@@ -145,6 +162,54 @@ function PrenotaContent() {
 
     setConfirmedBooking(newBooking);
     clearServices();
+  };
+
+  // Generate and download .ics iCalendar file
+  const handleDownloadIcs = (booking: Booking) => {
+    try {
+      const [year, month, day] = booking.date.split("-").map(Number);
+      const [hour, min] = booking.time.split(":").map(Number);
+      const startDate = new Date(year, month - 1, day, hour, min);
+      const endDate = new Date(startDate.getTime() + booking.totalDurationMinutes * 60 * 1000);
+
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const toIcsFormat = (d: Date) =>
+        `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+
+      const nowFormatted = toIcsFormat(new Date());
+      const startFormatted = toIcsFormat(startDate);
+      const endFormatted = toIcsFormat(endDate);
+
+      const icsLines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//RUSSO Equipe Parrucchieri//Torino Atelier Booking//IT",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        "BEGIN:VEVENT",
+        `UID:${booking.id}@russoequipe.it`,
+        `DTSTAMP:${nowFormatted}Z`,
+        `DTSTART:${startFormatted}`,
+        `DTEND:${endFormatted}`,
+        `SUMMARY:RUSSO Equipe Parrucchieri — ${booking.stylistName}`,
+        `DESCRIPTION:Rituale sartoriale: ${booking.serviceNames.join(", ")}.\\nInvestimento stimato: €${booking.totalPrice}\\nCodice prenotazione: ${booking.id}\\nAtelier Patrizia Russo: 011 242 8978`,
+        `LOCATION:Corso Lucio Quinzio Cincinnato 256, 10151 Torino TO, Italia`,
+        "STATUS:CONFIRMED",
+        "END:VEVENT",
+        "END:VCALENDAR",
+      ];
+
+      const blob = new Blob([icsLines.join("\r\n")], { type: "text/calendar;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `russo-appuntamento-${booking.id}.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.warn("Could not generate .ics file:", e);
+    }
   };
 
   const hours = Math.floor(totalDurationMinutes / 60);
@@ -274,7 +339,13 @@ function PrenotaContent() {
           </div>
 
           {/* Voucher Actions */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 pt-2">
+            <button
+              onClick={() => handleDownloadIcs(confirmedBooking)}
+              className="bg-[#141312] text-[#F6F4F0] py-3.5 px-6 font-mono text-xs uppercase tracking-widest hover:bg-[#8C5A3C] transition-colors border border-[#141312]"
+            >
+              📅 Scarica Promemoria (.ICS)
+            </button>
             <a
               href={`https://wa.me/390112428978?text=${encodeURIComponent(`Buongiorno Atelier Russo, confermo la prenotazione ${confirmedBooking.id} a nome ${confirmedBooking.clientName} per il giorno ${confirmedBooking.date} alle ore ${confirmedBooking.time}.`)}`}
               target="_blank"
@@ -285,7 +356,7 @@ function PrenotaContent() {
             </a>
             <Link
               href="/gestione"
-              className="border border-[#141312] bg-[#141312] text-[#F6F4F0] py-3.5 px-6 font-mono text-xs uppercase tracking-widest hover:bg-[#8C5A3C] transition-colors text-center"
+              className="border border-[#DED9D0] bg-[#F6F4F0] text-[#141312] py-3.5 px-6 font-mono text-xs uppercase tracking-widest hover:bg-[#EFECE6] transition-colors text-center"
             >
               Visualizza nel Registro Salone →
             </Link>
@@ -293,11 +364,11 @@ function PrenotaContent() {
               onClick={() => window.print()}
               className="border border-[#DED9D0] bg-[#F6F4F0] text-[#141312] py-3.5 px-6 font-mono text-xs uppercase tracking-widest hover:bg-[#EFECE6] transition-colors text-center"
             >
-              🖨 Stampa Promemoria
+              🖨 Stampa Ricevuta
             </button>
             <button
               onClick={() => setConfirmedBooking(null)}
-              className="text-[#5C5852] font-mono text-xs uppercase hover:underline ml-auto"
+              className="text-[#5C5852] font-mono text-xs uppercase hover:underline ml-auto py-2"
             >
               Effettua Altra Prenotazione
             </button>
@@ -432,7 +503,7 @@ function PrenotaContent() {
               </div>
             </div>
 
-            {/* 3. Interactive Date & Calendar Selection */}
+            {/* 3. Interactive Date & Calendar Selection with Real Conflict Checks */}
             <div className="border border-[#DED9D0] bg-[#F6F4F0] p-6 sm:p-8 space-y-5">
               <div className="flex items-center justify-between border-b border-[#DED9D0] pb-3">
                 <span className="font-mono text-xs uppercase tracking-wider text-[#8C5A3C] font-semibold">
@@ -474,26 +545,36 @@ function PrenotaContent() {
                 </div>
               </div>
 
-              {/* Available Time Slots Grid */}
+              {/* Available Time Slots Grid with Conflict Checking */}
               <div className="pt-2">
                 <label className="block font-mono text-[10px] uppercase tracking-wider text-[#5C5852] mb-2">
-                  Fascia oraria per {selectedDate || "la data scelta"}:
+                  Fasce orarie ({selectedDate}):
                 </label>
                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   {availableTimeSlots.map((time) => {
                     const isTimeSelected = selectedTime === time;
+                    const isOccupied = isSlotOccupied(time);
+
                     return (
                       <button
                         key={time}
                         type="button"
-                        onClick={() => setSelectedTime(time)}
-                        className={`py-2 px-3 font-mono text-xs uppercase border transition-colors text-center ${
-                          isTimeSelected
+                        disabled={isOccupied}
+                        onClick={() => !isOccupied && setSelectedTime(time)}
+                        className={`py-2 px-3 font-mono text-xs uppercase border transition-colors text-center relative ${
+                          isOccupied
+                            ? "bg-[#EFECE6]/60 text-[#5C5852]/50 border-[#DED9D0]/50 cursor-not-allowed line-through"
+                            : isTimeSelected
                             ? "bg-[#8C5A3C] text-[#F6F4F0] border-[#8C5A3C] font-semibold"
                             : "bg-[#EFECE6] text-[#141312] border-[#DED9D0] hover:border-[#141312]"
                         }`}
                       >
-                        Ore {time}
+                        <span>Ore {time}</span>
+                        {isOccupied && (
+                          <span className="block text-[8px] uppercase tracking-tight text-red-700/80 no-underline">
+                            Occupato
+                          </span>
+                        )}
                       </button>
                     );
                   })}
